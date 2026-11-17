@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLASSE BARBER – Kapster Panggilan Premium</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          gold:  { DEFAULT:'#C9A84C', light:'#E2C077', dark:'#9A7A30' },
+          dark:  { DEFAULT:'#111111', card:'#1A1A1A', border:'#2A2A2A' },
+        },
+        fontFamily: { sans: ['Montserrat','sans-serif'] }
+      }
+    }
+  }
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root { scroll-behavior: smooth; }
+  body  { background:#111111; color:#f0f0f0; font-family:'Montserrat',sans-serif; }
+
+  /* Gold gradient text */
+  .gold-text {
+    background: linear-gradient(135deg, #C9A84C, #E2C077, #C9A84C);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Gold border glow */
+  .gold-glow { box-shadow: 0 0 20px rgba(201,168,76,.25); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background:#111; }
+  ::-webkit-scrollbar-thumb { background:#C9A84C; border-radius:3px; }
+
+  /* Animated underline nav */
+  .nav-link { position:relative; }
+  .nav-link::after {
+    content:''; position:absolute; bottom:-4px; left:0;
+    width:0; height:1px; background:#C9A84C;
+    transition: width .3s;
+  }
+  .nav-link:hover::after { width:100%; }
+
+  /* Hero pattern */
+  .hero-bg {
+    background:
+      radial-gradient(ellipse at 70% 50%, rgba(201,168,76,.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 20% 80%, rgba(201,168,76,.05) 0%, transparent 50%),
+      #111111;
+  }
+
+  /* Step connector line */
+  .step-line { position:relative; }
+  .step-line::before {
+    content:''; position:absolute; top:28px; left:calc(50% + 28px);
+    width:calc(100% - 56px); height:1px;
+    background: linear-gradient(90deg, #C9A84C, transparent);
+  }
+
+  /* Price card hover */
+  .price-card { transition: transform .25s, box-shadow .25s; }
+  .price-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 50px rgba(201,168,76,.2);
+  }
+
+  /* Modal backdrop */
+  .modal-bg { backdrop-filter: blur(6px); }
+
+  /* Input gold focus */
+  .inp {
+    background:#1A1A1A; border:1px solid #2A2A2A; color:#f0f0f0;
+    border-radius:8px; padding:12px 16px; width:100%; outline:none;
+    transition: border-color .2s;
+  }
+  .inp:focus { border-color:#C9A84C; }
+  .inp::placeholder { color:#555; }
+
+  /* Radio location card */
+  .loc-card input:checked + label {
+    border-color:#C9A84C;
+    background:rgba(201,168,76,.08);
+    color:#C9A84C;
+  }
+
+  /* Animate fade-up */
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(24px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .fade-up { animation: fadeUp .6s ease both; }
+  .delay-1 { animation-delay:.1s; }
+  .delay-2 { animation-delay:.2s; }
+  .delay-3 { animation-delay:.3s; }
+  .delay-4 { animation-delay:.4s; }
+
+  /* Receipt */
+  .receipt {
+    background: linear-gradient(135deg, #1A1A1A, #222);
+    border: 1px solid #C9A84C;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     NAVBAR
+══════════════════════════════════════════════ -->
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" style="background:rgba(17,17,17,0.95);backdrop-filter:blur(12px);border-bottom:1px solid #2A2A2A">
+  <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+
+    <!-- Logo -->
+    <div class="flex items-center gap-3 cursor-pointer" onclick="showSection('home')">
+      <div class="w-9 h-9 rounded-full border border-gold flex items-center justify-content-center flex-shrink-0" style="background:linear-gradient(135deg,#1A1A1A,#2A2A2A)">
+        <span class="text-gold text-xs font-black leading-none flex items-center justify-center w-full h-full">✂</span>
+      </div>
+      <span class="font-black text-lg tracking-widest gold-text">CLASSE BARBER</span>
+    </div>
+
+    <!-- Desktop Nav -->
+    <div class="hidden md:flex items-center gap-8">
+      <a href="#how" class="nav-link text-sm text-gray-400 hover:text-gold transition-colors">Cara Kerja</a>
+      <a href="#price" class="nav-link text-sm text-gray-400 hover:text-gold transition-colors">Harga</a>
+      <a href="#about" class="nav-link text-sm text-gray-400 hover:text-gold transition-colors">Tentang Kami</a>
+    </div>
+
+    <!-- Auth Buttons -->
+    <div class="flex items-center gap-3" id="nav-auth">
+      <button onclick="openModal('login')" class="text-sm text-gray-300 hover:text-gold transition-colors font-medium">Login</button>
+      <button onclick="openModal('register')" class="text-sm font-bold px-4 py-2 rounded-full border border-gold text-gold hover:bg-gold hover:text-black transition-all">Daftar Member</button>
+    </div>
+
+    <!-- User Menu (after login) -->
+    <div class="hidden items-center gap-3" id="nav-user">
+      <span class="text-sm text-gray-400">Halo, <span id="nav-username" class="text-gold font-bold"></span></span>
+      <button onclick="showSection('dashboard')" class="text-sm font-bold px-4 py-2 rounded-full border border-gold text-gold hover:bg-gold hover:text-black transition-all">Dashboard</button>
+      <button onclick="doLogout()" class="text-sm text-gray-500 hover:text-red-400 transition-colors">Keluar</button>
+    </div>
+
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════
+     SECTION: HOME
+══════════════════════════════════════════════ -->
+<div id="sec-home">
+
+  <!-- HERO -->
+  <section class="hero-bg min-h-screen flex items-center pt-16" id="home">
+    <div class="max-w-7xl mx-auto px-5 py-20 grid md:grid-cols-2 gap-12 items-center">
+
+      <!-- Teks kiri -->
+      <div class="fade-up">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold/30 bg-gold/5 mb-6">
+          <span class="w-2 h-2 rounded-full bg-gold animate-pulse"></span>
+          <span class="text-gold text-xs font-semibold tracking-widest uppercase">Layanan Panggilan Premium</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-black leading-tight mb-6">
+          <span class="text-white">Kapster</span><br>
+          <span class="gold-text">Profesional</span><br>
+          <span class="text-white">Datang ke</span><br>
+          <span class="text-gray-300">Rumah & Kantor</span>
+        </h1>
+        <p class="text-gray-400 leading-relaxed mb-8 max-w-md">
+          Tidak perlu keluar rumah, tidak perlu antre. Kapster <strong class="text-gold">CLASSE BARBER</strong> hadir langsung ke lokasi Anda — membawa peralatan lengkap, bersih, dan steril. Tetap produktif, tetap tampil prima.
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <button onclick="handleBookingCTA()" class="group flex items-center gap-3 px-7 py-4 rounded-full font-bold text-black transition-all duration-300 gold-glow"
+            style="background:linear-gradient(135deg,#C9A84C,#E2C077)">
+            <span>✂</span>
+            <span>Panggil Kapster Sekarang</span>
+            <span class="group-hover:translate-x-1 transition-transform">→</span>
+          </button>
+          <a href="#price" class="flex items-center gap-2 px-7 py-4 rounded-full font-bold border border-dark-border text-gray-300 hover:border-gold hover:text-gold transition-all">
+            Lihat Harga
+          </a>
+        </div>
+
+        <!-- Stats -->
+        <div class="flex gap-8 mt-10">
+          <div>
+            <div class="text-2xl font-black gold-text">500+</div>
+            <div class="text-xs text-gray-500 mt-1">Member Aktif</div>
+          </div>
+          <div class="w-px bg-dark-border"></div>
+          <div>
+            <div class="text-2xl font-black gold-text">1200+</div>
+            <div class="text-xs text-gray-500 mt-1">Kunjungan Selesai</div>
+          </div>
+          <div class="w-px bg-dark-border"></div>
+          <div>
+            <div class="text-2xl font-black gold-text">4.9★</div>
+            <div class="text-xs text-gray-500 mt-1">Rating Pelanggan</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual kanan -->
+      <div class="fade-up delay-2 flex justify-center">
+        <div class="relative w-72 h-72 md:w-80 md:h-80">
+          <!-- Lingkaran dekorasi -->
+          <div class="absolute inset-0 rounded-full border border-gold/20 animate-pulse"></div>
+          <div class="absolute inset-6 rounded-full border border-gold/15"></div>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-56 h-56 md:w-64 md:h-64 rounded-full gold-glow flex items-center justify-center"
+              style="background:linear-gradient(135deg,#1A1A1A,#222222);border:1px solid #C9A84C">
+              <div class="text-center">
+                <div class="text-7xl mb-3">✂️</div>
+                <div class="text-gold font-black text-sm tracking-widest">CLASSE BARBER</div>
+                <div class="text-gray-500 text-xs mt-1">On-Demand Barbershop</div>
+              </div>
+            </div>
+          </div>
+          <!-- Badge -->
+          <div class="absolute -top-2 -right-2 bg-gold text-black text-xs font-black px-3 py-1 rounded-full">
+            #1 Barber Panggilan
+          </div>
+          <div class="absolute -bottom-2 -left-2 border border-gold/40 text-gold text-xs font-semibold px-3 py-1 rounded-full"
+            style="background:rgba(201,168,76,.1)">
+            🏠 Ke Rumah & 🏢 Kantor
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how" class="py-24 border-t border-dark-border">
+    <div class="max-w-7xl mx-auto px-5">
+      <div class="text-center mb-16">
+        <span class="text-gold text-xs font-semibold tracking-widest uppercase">Mudah & Cepat</span>
+        <h2 class="text-3xl md:text-4xl font-black text-white mt-3">Cara Kerja <span class="gold-text">CLASSE BARBER</span></h2>
+        <p class="text-gray-500 mt-3 max-w-md mx-auto">Tiga langkah mudah untuk mendapatkan layanan cukur premium di lokasi Anda</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8 relative">
+
+        <!-- Step 1 -->
+        <div class="text-center group">
+          <div class="relative inline-block mb-6">
+            <div class="w-16 h-16 rounded-full border-2 border-gold flex items-center justify-center mx-auto group-hover:bg-gold/10 transition-colors"
+              style="background:#1A1A1A">
+              <span class="text-gold font-black text-xl">1</span>
+            </div>
+            <div class="hidden md:block absolute top-1/2 left-full w-full h-px -translate-y-1/2"
+              style="background:linear-gradient(90deg,#C9A84C,transparent);width:calc(100% + 2rem)"></div>
+          </div>
+          <div class="text-4xl mb-4">📱</div>
+          <h3 class="font-bold text-white text-lg mb-2">Daftar / Login Member</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Buat akun CLASSE BARBER gratis atau login jika sudah terdaftar sebagai member.</p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="text-center group">
+          <div class="relative inline-block mb-6">
+            <div class="w-16 h-16 rounded-full border-2 border-gold flex items-center justify-center mx-auto group-hover:bg-gold/10 transition-colors"
+              style="background:#1A1A1A">
+              <span class="text-gold font-black text-xl">2</span>
+            </div>
+          </div>
+          <div class="text-4xl mb-4">📍</div>
+          <h3 class="font-bold text-white text-lg mb-2">Pilih Paket & Lokasi</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Tentukan paket layanan, masukkan alamat rumah atau kantor Anda, pilih tanggal dan jam kunjungan.</p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="text-center group">
+          <div class="relative inline-block mb-6">
+            <div class="w-16 h-16 rounded-full border-2 border-gold flex items-center justify-center mx-auto group-hover:bg-gold/10 transition-colors"
+              style="background:#1A1A1A">
+              <span class="text-gold font-black text-xl">3</span>
+            </div>
+          </div>
+          <div class="text-4xl mb-4">✅</div>
+          <h3 class="font-bold text-white text-lg mb-2">Kapster Datang ke Anda</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Kapster profesional CLASSE BARBER datang tepat waktu dengan peralatan lengkap dan steril ke lokasi Anda.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICE LIST -->
+  <section id="price" class="py-24" style="background:linear-gradient(180deg,#111,#161616,#111)">
+    <div class="max-w-7xl mx-auto px-5">
+      <div class="text-center mb-16">
+        <span class="text-gold text-xs font-semibold tracking-widest uppercase">Transparan & Terjangkau</span>
+        <h2 class="text-3xl md:text-4xl font-black text-white mt-3">Daftar <span class="gold-text">Harga Layanan</span></h2>
+        <p class="text-gray-500 mt-3 max-w-lg mx-auto">Semua harga sudah termasuk biaya panggilan kapster ke lokasi Anda (rumah atau kantor). Tanpa biaya tersembunyi.</p>
+      </div>
+
+      <!-- Dewasa -->
+      <div class="mb-10">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="h-px flex-1 bg-dark-border"></div>
+          <span class="text-gold font-bold text-sm tracking-widest uppercase px-4">Kategori Dewasa</span>
+          <div class="h-px flex-1 bg-dark-border"></div>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+
+          <div class="price-card rounded-2xl p-6 border border-dark-border" style="background:#1A1A1A">
+            <div class="text-3xl mb-4">💈</div>
+            <h3 class="font-bold text-white text-lg mb-2">Pangkas Rambut</h3>
+            <p class="text-gray-500 text-sm mb-4">Cukur rambut profesional oleh kapster berpengalaman. Peralatan steril & lengkap.</p>
+            <div class="flex items-end gap-2 mb-5">
+              <span class="text-3xl font-black gold-text">Rp 50.000</span>
+            </div>
+            <ul class="text-sm text-gray-400 space-y-2 mb-6">
+              <li class="flex items-center gap-2"><span class="text-gold">✓</span> Kapster datang ke lokasi</li>
+              <li class="flex items-center gap-2"><span class="text-gold">✓</span> Alat steril & higienis</li>
+              <li class="flex items-center gap-2"><span class="text-gold">✓</span> Tanpa antri</li>
+            </ul>
+            <button onclick="handleBookingCTA()" class="w-full py-3 rounded-xl font-bold border border-gold text-gold hover:bg-gold hover:text-black transition-all text-sm">
+              Pesan Sekarang
+            </button>
+          </div>
+
+          <div class="price-card rounded-2xl p-6 border-2 border-gold relative overflow-hidden" style="background:linear-gradient(135deg,#1A1A1A,#1E1A11)">
+            <div class="absolute top-3 right-3 bg-gold text-black text-xs font-black px-2 py-1 rounded-full">POPULER</div>
+            <div class="text-3xl mb-4">💆</div>
+            <h3 class="font-bold text-white text-lg mb-2">Pangkas + Pijat Kepala</h3>
+            <p class="text-gray-500 text-sm mb-4">Cukur rambut lengkap plus pijat kepala relaxing untuk melepas penat setelah bekerja.</p>
+            <div class="flex items-end gap-2 mb-5">
+              <span class="text-3xl font-black gold-text">Rp 70.000</span>
+            </div>
+            <ul class="text-sm text-gray-400 space-y-2 mb-6">
+              <li class="flex items-center gap-2"><span class="text-gold">✓</span> Kapster datang ke lokasi</li>
+              <li class="flex items-center gap-2"><span class="text-gold">✓</span> Pijat kepala 10–15 menit</li>
+              <li class="flex items-center gap-2"><span class="text-gold">✓</span> Alat steril & higienis</li>
+            </ul>
+            <button onclick="handleBookingCTA()" class="w-full py-3 rounded-xl font-bold text-black transition-all text-sm"
+              style="background:linear-gradient(135deg,#C9A84C,#E2C077)">
+              Pesan Sekarang
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Anak -->
+      <div>
+        <div class="flex items-center gap-3 mb-6">
+          <div class="h-px flex-1 bg-dark-border"></div>
+          <span class="text-gold font-bold text-sm tracking-widest uppercase px-4">Kategori Anak-Anak</span>
+          <div class="h-px flex-1 bg-dark-border"></div>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+
+          <div class="price-card rounded-2xl p-6 border border-dark-border" style="background:#1A1A1A">
+            <div class="text-3xl mb-4">👦</div>
+            <h3 class="font-bold text-white text-lg mb-2">Pangkas Rambut Anak</h3>
+            <p class="text-gray-500 text-sm mb-4">Khusus anak-anak, kapster sabar dan terlatih menangani si kecil dengan lembut dan aman.</p>
+            <div class="flex items-end gap-2 mb-5">
+              <span class="text-3xl font-black gold-text">Rp 30.000</span>
+            </div>
+            <ul class="text-sm text-gray-400 space-y-2 mb-6">
+              <li class="flex items-center gap-2"><span class="text-gold">✓</span> Kapster datang ke rumah</li>
+              <li class="flex items-center gap-2"><span class="text-gold">✓</span> Ramah anak</li>
+              <li class="flex items-center gap-2"><span class="text-gold">✓</span> Alat steril & aman</li>
+            </ul>
+            <button onclick="handleBookingCTA()" class="w-full py-3 rounded-xl font-bold border border-gold text-gold hover:bg-gold hover:text-black transition-all text-sm">
+              Pesan Sekarang
+            </button>
+          </div>
+
+
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="py-24 border-t border-dark-border">
+    <div class="max-w-7xl mx-auto px-5 grid md:grid-cols-2 gap-16 items-center">
+      <div>
+        <span class="text-gold text-xs font-semibold tracking-widest uppercase">Mengapa CLASSE BARBER?</span>
+        <h2 class="text-3xl md:text-4xl font-black text-white mt-3 mb-6">
+          Premium. Profesional.<br><span class="gold-text">Datang ke Anda.</span>
+        </h2>
+        <p class="text-gray-400 leading-relaxed mb-6">
+          CLASSE BARBER lahir dari satu misi sederhana: menghadirkan pengalaman barbershop kelas premium langsung ke pintu Anda. Kami memahami bahwa waktu Anda sangat berharga — itulah mengapa kapster kami yang datang, bukan sebaliknya.
+        </p>
+        <div class="space-y-4">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-full border border-gold/30 flex items-center justify-center flex-shrink-0 bg-gold/5">
+              <span class="text-gold text-sm">✓</span>
+            </div>
+            <div>
+              <div class="font-bold text-white">Kapster Bersertifikat</div>
+              <div class="text-gray-500 text-sm">Semua kapster CLASSE BARBER terlatih dan berpengalaman minimum 3 tahun.</div>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-full border border-gold/30 flex items-center justify-center flex-shrink-0 bg-gold/5">
+              <span class="text-gold text-sm">✓</span>
+            </div>
+            <div>
+              <div class="font-bold text-white">Peralatan Steril</div>
+              <div class="text-gray-500 text-sm">Setiap alat disterilkan sebelum dan sesudah setiap kunjungan.</div>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-full border border-gold/30 flex items-center justify-center flex-shrink-0 bg-gold/5">
+              <span class="text-gold text-sm">✓</span>
+            </div>
+            <div>
+              <div class="font-bold text-white">On-Time Guarantee</div>
+              <div class="text-gray-500 text-sm">Kapster datang tepat sesuai jadwal yang Anda pilih.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="rounded-2xl p-5 border border-dark-border text-center" style="background:#1A1A1A">
+          <div class="text-4xl mb-3">🏠</div>
+          <div class="font-bold text-white mb-1">Ke Rumah</div>
+          <div class="text-gray-500 text-xs">Kapster datang ke rumah Anda kapanpun dibutuhkan</div>
+        </div>
+        <div class="rounded-2xl p-5 border border-dark-border text-center mt-6" style="background:#1A1A1A">
+          <div class="text-4xl mb-3">🏢</div>
+          <div class="font-bold text-white mb-1">Ke Kantor</div>
+          <div class="text-gray-500 text-xs">Rapi di sela jam kerja tanpa harus meninggalkan kantor</div>
+        </div>
+        <div class="rounded-2xl p-5 border border-dark-border text-center" style="background:#1A1A1A">
+          <div class="text-4xl mb-3">⏰</div>
+          <div class="font-bold text-white mb-1">Hemat Waktu</div>
+          <div class="text-gray-500 text-xs">Tidak perlu antre, tidak perlu keluar rumah</div>
+        </div>
+        <div class="rounded-2xl p-5 border border-dark-border text-center mt-6" style="background:#1A1A1A">
+          <div class="text-4xl mb-3">💰</div>
+          <div class="font-bold text-white mb-1">Harga Pasti</div>
+          <div class="text-gray-500 text-xs">Sudah termasuk ongkos panggilan, tanpa biaya tambahan</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- end sec-home -->
+
+<!-- ══════════════════════════════════════════════
+     SECTION: BOOKING
+══════════════════════════════════════════════ -->
+<div id="sec-booking" class="hidden pt-16 min-h-screen">
+  <div class="max-w-2xl mx-auto px-5 py-16">
+    <div class="text-center mb-10">
+      <span class="text-gold text-xs font-semibold tracking-widest uppercase">Pesan Layanan</span>
+      <h2 class="text-3xl font-black text-white mt-3">Formulir <span class="gold-text">Booking Panggilan</span></h2>
+      <p class="text-gray-500 mt-2 text-sm">Isi form di bawah — kapster CLASSE BARBER siap datang ke lokasi Anda</p>
+    </div>
+
+    <div class="rounded-2xl p-8 border border-dark-border" style="background:#1A1A1A">
+      <form id="booking-form" onsubmit="submitBooking(event)">
+
+        <!-- Paket -->
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-gray-300 mb-3">Pilih Paket Layanan</label>
+          <select id="b-paket" class="inp" required>
+            <option value="">-- Pilih Paket --</option>
+            <option value="Dewasa - Pangkas Saja|50000">Dewasa — Pangkas Rambut Saja · Rp 50.000</option>
+            <option value="Dewasa - Pangkas + Pijat Kepala|70000">Dewasa — Pangkas + Pijat Kepala · Rp 70.000</option>
+            <option value="Anak - Pangkas Biasa|30000">Anak — Pangkas Rambut Biasa · Rp 30.000</option>
+          </select>
+        </div>
+
+        <!-- Tipe Lokasi -->
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-gray-300 mb-3">Tipe Lokasi Kunjungan</label>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="cursor-pointer">
+              <input type="radio" name="lokasi-tipe" value="Rumah" class="sr-only" onchange="onLokasiChange(this)" required>
+              <div class="rounded-xl p-4 border-2 border-dark-border text-center transition-all hover:border-gold/50" id="loc-rumah-card">
+                <div class="text-2xl mb-2">🏠</div>
+                <div class="font-bold text-sm text-gray-300">Rumah</div>
+                <div class="text-xs text-gray-500 mt-1">Kapster ke rumah Anda</div>
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="lokasi-tipe" value="Kantor" class="sr-only" onchange="onLokasiChange(this)">
+              <div class="rounded-xl p-4 border-2 border-dark-border text-center transition-all hover:border-gold/50" id="loc-kantor-card">
+                <div class="text-2xl mb-2">🏢</div>
+                <div class="font-bold text-sm text-gray-300">Kantor</div>
+                <div class="text-xs text-gray-500 mt-1">Kapster ke kantor Anda</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Alamat -->
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-gray-300 mb-3">Alamat Lengkap & Patokan</label>
+          <textarea id="b-alamat" class="inp min-h-24 resize-none"
+            placeholder="Pilih tipe lokasi terlebih dahulu..." rows="3" required></textarea>
+        </div>
+
+        <!-- Tanggal & Jam -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <label class="block text-sm font-semibold text-gray-300 mb-3">Tanggal Kunjungan</label>
+            <input type="date" id="b-tanggal" class="inp" required>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-300 mb-3">Jam Kedatangan</label>
+            <input type="time" id="b-jam" class="inp" required>
+          </div>
+        </div>
+
+        <!-- WhatsApp -->
+        <div class="mb-8">
+          <label class="block text-sm font-semibold text-gray-300 mb-3">Nomor WhatsApp <span class="text-gray-500">(untuk koordinasi & share lokasi)</span></label>
+          <input type="tel" id="b-wa" class="inp" placeholder="08xxxxxxxxxx" required>
+        </div>
+
+        <button type="submit" class="w-full py-4 rounded-xl font-black text-black text-lg transition-all"
+          style="background:linear-gradient(135deg,#C9A84C,#E2C077)">
+          ✂ Konfirmasi Pesanan
+        </button>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION: DASHBOARD
+══════════════════════════════════════════════ -->
+<div id="sec-dashboard" class="hidden pt-16 min-h-screen">
+  <div class="max-w-4xl mx-auto px-5 py-16">
+    <div class="mb-10">
+      <span class="text-gold text-xs font-semibold tracking-widest uppercase">Member Area</span>
+      <h2 class="text-3xl font-black text-white mt-3">Dashboard <span class="gold-text">CLASSE BARBER</span></h2>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="rounded-2xl p-6 border border-gold/30 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+      style="background:linear-gradient(135deg,#1A1A1A,#1E1A11)">
+      <div class="w-16 h-16 rounded-full border-2 border-gold flex items-center justify-center text-2xl font-black text-gold flex-shrink-0"
+        style="background:#2A2200" id="dash-avatar">C</div>
+      <div class="flex-1">
+        <div class="font-black text-white text-xl" id="dash-name">Nama Member</div>
+        <div class="text-gray-500 text-sm" id="dash-email">email@member.com</div>
+        <div class="text-gold text-sm font-semibold mt-1" id="dash-wa">0812xxxxxxxx</div>
+      </div>
+      <button onclick="showSection('booking')" class="px-5 py-2 rounded-xl font-bold text-black text-sm"
+        style="background:linear-gradient(135deg,#C9A84C,#E2C077)">
+        + Pesan Layanan
+      </button>
+    </div>
+
+    <!-- Riwayat -->
+    <div>
+      <h3 class="font-bold text-white text-lg mb-4">Riwayat Pemesanan</h3>
+      <div id="history-list">
+        <div class="text-center py-12 text-gray-600">
+          <div class="text-4xl mb-3">📋</div>
+          <div>Belum ada riwayat pemesanan</div>
+          <div class="text-sm mt-1">Pesan layanan pertama Anda sekarang!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION: RECEIPT
+══════════════════════════════════════════════ -->
+<div id="sec-receipt" class="hidden pt-16 min-h-screen">
+  <div class="max-w-lg mx-auto px-5 py-16">
+    <div class="text-center mb-8">
+      <div class="text-5xl mb-4">🎉</div>
+      <h2 class="text-2xl font-black text-white">Pesanan <span class="gold-text">Berhasil!</span></h2>
+      <p class="text-gray-500 mt-2 text-sm">Kapster CLASSE BARBER akan segera dikonfirmasi ke lokasi Anda</p>
+    </div>
+
+    <!-- Struk -->
+    <div class="receipt rounded-2xl p-6 mb-6">
+      <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gold/30">
+        <span class="text-2xl">✂️</span>
+        <div>
+          <div class="font-black text-white tracking-widest text-sm">CLASSE BARBER</div>
+          <div class="text-gray-500 text-xs">Struk Digital Resmi</div>
+        </div>
+        <div class="ml-auto text-right">
+          <div class="text-gold text-xs font-semibold" id="r-id"></div>
+          <div class="text-gray-600 text-xs" id="r-date"></div>
+        </div>
+      </div>
+
+      <div class="space-y-3 mb-5">
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-500">Nama Member</span>
+          <span class="text-white font-semibold" id="r-name"></span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-500">Paket Layanan</span>
+          <span class="text-white font-semibold" id="r-paket"></span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-500">Tipe Lokasi</span>
+          <span class="text-gold font-bold" id="r-tipe"></span>
+        </div>
+        <div class="flex justify-between text-sm items-start gap-4">
+          <span class="text-gray-500 flex-shrink-0">Alamat</span>
+          <span class="text-white font-semibold text-right" id="r-alamat"></span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-500">Jadwal Kunjungan</span>
+          <span class="text-white font-semibold" id="r-jadwal"></span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-500">WhatsApp</span>
+          <span class="text-white font-semibold" id="r-wa"></span>
+        </div>
+      </div>
+
+      <div class="border-t border-gold/30 pt-4 flex justify-between items-center">
+        <span class="font-bold text-white">Total Pembayaran</span>
+        <span class="text-2xl font-black gold-text" id="r-total"></span>
+      </div>
+
+      <div class="mt-3 text-xs text-center text-gray-600">Sudah termasuk biaya panggilan ke lokasi</div>
+    </div>
+
+    <!-- Tombol WA -->
+    <button onclick="kirimWA()" class="w-full py-4 rounded-xl font-black text-black text-base mb-4 flex items-center justify-center gap-3"
+      style="background:linear-gradient(135deg,#25D366,#128C7E)">
+      <span>💬</span> Kirim Jadwal & Shareloc via WhatsApp
+    </button>
+
+    <div class="grid grid-cols-2 gap-3">
+      <button onclick="showSection('booking')" class="py-3 rounded-xl font-bold border border-gold text-gold hover:bg-gold hover:text-black transition-all text-sm">
+        + Pesan Lagi
+      </button>
+      <button onclick="showSection('dashboard')" class="py-3 rounded-xl font-bold border border-dark-border text-gray-400 hover:border-gray-500 transition-all text-sm">
+        Dashboard
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════ -->
+<footer id="main-footer" class="border-t border-dark-border py-12">
+  <div class="max-w-7xl mx-auto px-5">
+    <div class="grid md:grid-cols-3 gap-8 mb-8">
+      <div>
+        <div class="font-black text-xl gold-text tracking-widest mb-3">CLASSE BARBER</div>
+        <p class="text-gray-500 text-sm leading-relaxed">Barbershop panggilan premium. Kapster profesional datang langsung ke rumah atau kantor Anda.</p>
+      </div>
+      <div>
+        <div class="font-bold text-white mb-3">Jam Operasional</div>
+        <div class="space-y-2 text-sm text-gray-500">
+          <div class="flex justify-between"><span>Senin – Jumat</span><span class="text-gold">08.00 – 21.00</span></div>
+          <div class="flex justify-between"><span>Sabtu – Minggu</span><span class="text-gold">07.00 – 22.00</span></div>
+          <div class="flex justify-between"><span>Hari Libur</span><span class="text-gold">08.00 – 20.00</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="font-bold text-white mb-3">Area Layanan</div>
+        <div class="text-sm text-gray-500 leading-relaxed">Tersedia di area perkotaan dan sekitarnya. Hubungi kami untuk konfirmasi ketersediaan di lokasi Anda.</div>
+        <div class="mt-3 flex gap-2 flex-wrap">
+          <span class="text-xs px-2 py-1 rounded-full border border-dark-border text-gray-500">Kota Utama</span>
+          <span class="text-xs px-2 py-1 rounded-full border border-dark-border text-gray-500">Pinggir Kota</span>
+          <span class="text-xs px-2 py-1 rounded-full border border-dark-border text-gray-500">Kawasan Industri</span>
+        </div>
+      </div>
+    </div>
+    <div class="border-t border-dark-border pt-6 text-center text-xs text-gray-600">
+      © 2025 <span class="text-gold font-bold">CLASSE BARBER</span>. Semua hak dilindungi. Layanan Pangkas Rambut Panggilan Premium.
+    </div>
+  </div>
+</footer>
+
+<!-- ══════════════════════════════════════════════
+     MODAL: LOGIN
+══════════════════════════════════════════════ -->
+<div id="modal-login" class="fixed inset-0 z-50 hidden items-center justify-center modal-bg" style="background:rgba(0,0,0,0.75)">
+  <div class="w-full max-w-md mx-4 rounded-2xl p-8 border border-dark-border" style="background:#1A1A1A">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <div class="font-black gold-text tracking-widest text-sm">CLASSE BARBER</div>
+        <h3 class="text-xl font-black text-white mt-1">Login Member</h3>
+      </div>
+      <button onclick="closeModal('login')" class="text-gray-600 hover:text-white text-2xl leading-none">×</button>
+    </div>
+
+    <form onsubmit="doLogin(event)" class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-widest">Email / Username</label>
+        <input type="text" id="l-email" class="inp" placeholder="email@anda.com" required>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-widest">Password</label>
+        <input type="password" id="l-pass" class="inp" placeholder="••••••••" required>
+      </div>
+      <div id="l-error" class="text-red-400 text-sm hidden"></div>
+      <button type="submit" class="w-full py-3 rounded-xl font-black text-black"
+        style="background:linear-gradient(135deg,#C9A84C,#E2C077)">
+        Masuk ke Akun Saya
+      </button>
+    </form>
+
+    <div class="mt-5 text-center text-sm text-gray-500">
+      Belum punya akun?
+      <button onclick="switchModal('login','register')" class="text-gold font-bold hover:underline ml-1">Daftar Member</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MODAL: REGISTER
+══════════════════════════════════════════════ -->
+<div id="modal-register" class="fixed inset-0 z-50 hidden items-center justify-center modal-bg" style="background:rgba(0,0,0,0.75)">
+  <div class="w-full max-w-md mx-4 rounded-2xl p-8 border border-dark-border" style="background:#1A1A1A;max-height:90vh;overflow-y:auto">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <div class="font-black gold-text tracking-widest text-sm">CLASSE BARBER</div>
+        <h3 class="text-xl font-black text-white mt-1">Daftar Member</h3>
+      </div>
+      <button onclick="closeModal('register')" class="text-gray-600 hover:text-white text-2xl leading-none">×</button>
+    </div>
+
+    <form onsubmit="doRegister(event)" class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-widest">Nama Lengkap</label>
+        <input type="text" id="reg-nama" class="inp" placeholder="Nama lengkap Anda" required>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-widest">Email / Username</label>
+        <input type="text" id="reg-email" class="inp" placeholder="email@anda.com" required>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-widest">Nomor WhatsApp</label>
+        <input type="tel" id="reg-wa" class="inp" placeholder="08xxxxxxxxxx" required>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-widest">Password</label>
+        <input type="password" id="reg-pass" class="inp" placeholder="Minimal 6 karakter" required minlength="6">
+      </div>
+      <div id="reg-error" class="text-red-400 text-sm hidden"></div>
+      <button type="submit" class="w-full py-3 rounded-xl font-black text-black"
+        style="background:linear-gradient(135deg,#C9A84C,#E2C077)">
+        Daftar Sekarang — Gratis!
+      </button>
+    </form>
+
+    <div class="mt-5 text-center text-sm text-gray-500">
+      Sudah punya akun?
+      <button onclick="switchModal('register','login')" class="text-gold font-bold hover:underline ml-1">Login di sini</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TOAST NOTIFICATION
+══════════════════════════════════════════════ -->
+<div id="toast" class="fixed bottom-6 right-6 z-50 hidden max-w-xs">
+  <div class="rounded-xl px-5 py-3 font-semibold text-sm flex items-center gap-3" id="toast-inner">
+    <span id="toast-ico">✓</span>
+    <span id="toast-msg"></span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
+<script>
+// ── Nomor WhatsApp Admin CLASSE BARBER ────────────────────
+const ADMIN_WA = '62882022530353';
+
+// ── State ─────────────────────────────────────────────────
+let currentUser  = null;
+let currentOrder = null;
+
+// ── Init ──────────────────────────────────────────────────
+window.addEventListener('load', function() {
+  var saved = localStorage.getItem('cb_session');
+  if (saved) {
+    currentUser = JSON.parse(saved);
+    updateNavUser();
+  }
+  // Set min date booking = hari ini
+  var today = new Date().toISOString().split('T')[0];
+  var bd = document.getElementById('b-tanggal');
+  if (bd) bd.min = today;
+});
+
+// ── SECTION MANAGER ───────────────────────────────────────
+function showSection(name) {
+  var sections = ['home','booking','dashboard','receipt'];
+  sections.forEach(function(s) {
+    var el = document.getElementById('sec-' + s);
+    if (el) el.classList.add('hidden');
+  });
+
+  var target = document.getElementById('sec-' + name);
+  if (target) target.classList.remove('hidden');
+
+  var footer = document.getElementById('main-footer');
+  if (footer) footer.classList.toggle('hidden', name !== 'home');
+
+  window.scrollTo(0, 0);
+
+  if (name === 'dashboard') refreshDashboard();
+  if (name === 'booking' && currentUser) {
+    var waEl = document.getElementById('b-wa');
+    if (waEl) waEl.value = currentUser.wa;
+  }
+}
+
+// ── MODAL ─────────────────────────────────────────────────
+function openModal(name) {
+  var m = document.getElementById('modal-' + name);
+  m.classList.remove('hidden');
+  m.classList.add('flex');
+}
+function closeModal(name) {
+  var m = document.getElementById('modal-' + name);
+  m.classList.add('hidden');
+  m.classList.remove('flex');
+}
+function switchModal(from, to) {
+  closeModal(from);
+  setTimeout(function() { openModal(to); }, 150);
+}
+
+// Tutup modal klik luar
+['login','register'].forEach(function(name) {
+  var m = document.getElementById('modal-' + name);
+  if (m) {
+    m.addEventListener('click', function(e) {
+      if (e.target === m) closeModal(name);
+    });
+  }
+});
+
+// ── REGISTER ──────────────────────────────────────────────
+function doRegister(e) {
+  e.preventDefault();
+  var nama  = document.getElementById('reg-nama').value.trim();
+  var email = document.getElementById('reg-email').value.trim().toLowerCase();
+  var wa    = document.getElementById('reg-wa').value.trim();
+  var pass  = document.getElementById('reg-pass').value;
+  var err   = document.getElementById('reg-error');
+
+  var members = JSON.parse(localStorage.getItem('cb_members') || '[]');
+  var exists  = members.find(function(m) { return m.email === email; });
+  if (exists) {
+    err.textContent = 'Email/username sudah terdaftar.';
+    err.classList.remove('hidden'); return;
+  }
+
+  members.push({ nama: nama, email: email, wa: wa, pass: pass });
+  localStorage.setItem('cb_members', JSON.stringify(members));
+
+  // Auto login
+  currentUser = { nama: nama, email: email, wa: wa };
+  localStorage.setItem('cb_session', JSON.stringify(currentUser));
+
+  closeModal('register');
+  updateNavUser();
+  showToast('✅ Daftar berhasil! Selamat datang, ' + nama + '!', 'success');
+  err.classList.add('hidden');
+  e.target.reset();
+}
+
+// ── LOGIN ─────────────────────────────────────────────────
+function doLogin(e) {
+  e.preventDefault();
+  var email = document.getElementById('l-email').value.trim().toLowerCase();
+  var pass  = document.getElementById('l-pass').value;
+  var err   = document.getElementById('l-error');
+
+  var members = JSON.parse(localStorage.getItem('cb_members') || '[]');
+  var user = members.find(function(m) { return m.email === email && m.pass === pass; });
+
+  if (!user) {
+    err.textContent = 'Email atau password salah.';
+    err.classList.remove('hidden'); return;
+  }
+
+  currentUser = { nama: user.nama, email: user.email, wa: user.wa };
+  localStorage.setItem('cb_session', JSON.stringify(currentUser));
+
+  closeModal('login');
+  updateNavUser();
+  showToast('✅ Login berhasil! Halo, ' + user.nama + '!', 'success');
+  err.classList.add('hidden');
+  e.target.reset();
+}
+
+// ── LOGOUT ────────────────────────────────────────────────
+function doLogout() {
+  currentUser = null;
+  localStorage.removeItem('cb_session');
+  updateNavUser();
+  showSection('home');
+  showToast('👋 Sampai jumpa!', 'info');
+}
+
+// ── UPDATE NAV ────────────────────────────────────────────
+function updateNavUser() {
+  var authEl = document.getElementById('nav-auth');
+  var userEl = document.getElementById('nav-user');
+  var nameEl = document.getElementById('nav-username');
+  if (currentUser) {
+    authEl.classList.add('hidden');
+    userEl.classList.remove('hidden');
+    userEl.classList.add('flex');
+    nameEl.textContent = currentUser.nama.split(' ')[0];
+  } else {
+    authEl.classList.remove('hidden');
+    userEl.classList.add('hidden');
+    userEl.classList.remove('flex');
+  }
+}
+
+// ── BOOKING CTA ───────────────────────────────────────────
+function handleBookingCTA() {
+  if (!currentUser) {
+    showToast('⚠️ Silakan login atau daftar member terlebih dahulu.', 'warn');
+    setTimeout(function() { openModal('login'); }, 800);
+    return;
+  }
+  showSection('booking');
+}
+
+// ── LOKASI CHANGE ─────────────────────────────────────────
+function onLokasiChange(input) {
+  var alamatEl = document.getElementById('b-alamat');
+  var rumahCard   = document.getElementById('loc-rumah-card');
+  var kantorCard  = document.getElementById('loc-kantor-card');
+
+  // Reset style
+  rumahCard.style.borderColor  = '';  rumahCard.style.background  = '';  rumahCard.style.color = '';
+  kantorCard.style.borderColor = '';  kantorCard.style.background = '';  kantorCard.style.color = '';
+
+  if (input.value === 'Rumah') {
+    rumahCard.style.borderColor  = '#C9A84C';
+    rumahCard.style.background   = 'rgba(201,168,76,0.08)';
+    rumahCard.style.color        = '#C9A84C';
+    alamatEl.placeholder = 'Contoh: Jl. Merdeka No. 10, RT 03/RW 02, Kelurahan Xxx — patokan: depan Minimarket ABC';
+  } else {
+    kantorCard.style.borderColor = '#C9A84C';
+    kantorCard.style.background  = 'rgba(201,168,76,0.08)';
+    kantorCard.style.color       = '#C9A84C';
+    alamatEl.placeholder = 'Contoh: Gedung Sudirman Tower Lt. 12, Ruang Meeting A — PT. Xxx, Jl. Sudirman No. 1';
+  }
+}
+
+// ── SUBMIT BOOKING ────────────────────────────────────────
+function submitBooking(e) {
+  e.preventDefault();
+
+  var paketRaw = document.getElementById('b-paket').value;
+  if (!paketRaw) { showToast('⚠️ Pilih paket layanan.', 'warn'); return; }
+
+  var lokasiEl = document.querySelector('input[name="lokasi-tipe"]:checked');
+  if (!lokasiEl) { showToast('⚠️ Pilih tipe lokasi (Rumah/Kantor).', 'warn'); return; }
+
+  var parts   = paketRaw.split('|');
+  var paket   = parts[0];
+  var harga   = parseInt(parts[1]);
+  var tipe    = lokasiEl.value;
+  var alamat  = document.getElementById('b-alamat').value.trim();
+  var tanggal = document.getElementById('b-tanggal').value;
+  var jam     = document.getElementById('b-jam').value;
+  var wa      = document.getElementById('b-wa').value.trim();
+
+  // Format tanggal
+  var tgl = new Date(tanggal);
+  var tglStr = tgl.toLocaleDateString('id-ID', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  var jamStr = jam;
+
+  // ID pesanan
+  var orderId = 'CB' + Date.now().toString().slice(-6);
+
+  currentOrder = {
+    id: orderId, paket: paket, harga: harga, tipe: tipe,
+    alamat: alamat, tanggal: tanggal, tglStr: tglStr,
+    jam: jamStr, wa: wa,
+    member: currentUser.nama, timestamp: new Date().toISOString()
+  };
+
+  // Simpan ke riwayat
+  var key = 'cb_orders_' + currentUser.email;
+  var orders = JSON.parse(localStorage.getItem(key) || '[]');
+  orders.unshift(currentOrder);
+  localStorage.setItem(key, JSON.stringify(orders));
+
+  // Tampilkan struk
+  showReceipt(currentOrder);
+}
+
+// ── TAMPILKAN STRUK ───────────────────────────────────────
+function showReceipt(o) {
+  document.getElementById('r-id').textContent     = '#' + o.id;
+  document.getElementById('r-date').textContent   = new Date(o.timestamp).toLocaleDateString('id-ID');
+  document.getElementById('r-name').textContent   = o.member;
+  document.getElementById('r-paket').textContent  = o.paket;
+  document.getElementById('r-tipe').textContent   = (o.tipe === 'Rumah' ? '🏠' : '🏢') + ' ' + o.tipe;
+  document.getElementById('r-alamat').textContent = o.alamat;
+  document.getElementById('r-jadwal').textContent = o.tglStr + ', ' + o.jam;
+  document.getElementById('r-wa').textContent     = o.wa;
+  document.getElementById('r-total').textContent  = 'Rp ' + o.harga.toLocaleString('id-ID');
+  showSection('receipt');
+}
+
+// ── KIRIM WA ──────────────────────────────────────────────
+function kirimWA() {
+  if (!currentOrder) return;
+  var o = currentOrder;
+  var ico = o.tipe === 'Rumah' ? '🏠' : '🏢';
+  var msg =
+    '✂ *BOOKING CLASSE BARBER* ✂\n' +
+    '————————————————\n' +
+    '📋 ID Pesanan: #' + o.id + '\n' +
+    '👤 Nama: ' + o.member + '\n' +
+    '💈 Paket: ' + o.paket + '\n' +
+    '💰 Total: Rp ' + o.harga.toLocaleString('id-ID') + '\n' +
+    '————————————————\n' +
+    ico + ' Tipe Lokasi: *' + o.tipe + '*\n' +
+    '📍 Alamat: ' + o.alamat + '\n' +
+    '📅 Tanggal: ' + o.tglStr + '\n' +
+    '⏰ Jam: ' + o.jam + '\n' +
+    '📞 WA: ' + o.wa + '\n' +
+    '————————————————\n' +
+    '📌 _Mohon konfirmasi ketersediaan kapster. Terima kasih!_';
+
+  var url = 'https://wa.me/' + ADMIN_WA + '?text=' + encodeURIComponent(msg);
+  window.open(url, '_blank');
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────
+function refreshDashboard() {
+  if (!currentUser) return;
+
+  document.getElementById('dash-name').textContent = currentUser.nama;
+  document.getElementById('dash-email').textContent = currentUser.email;
+  document.getElementById('dash-wa').textContent = currentUser.wa;
+  document.getElementById('dash-avatar').textContent = currentUser.nama[0].toUpperCase();
+
+  var key = 'cb_orders_' + currentUser.email;
+  var orders = JSON.parse(localStorage.getItem(key) || '[]');
+  var el = document.getElementById('history-list');
+
+  if (orders.length === 0) {
+    el.innerHTML =
+      '<div class="text-center py-12 text-gray-600">' +
+        '<div class="text-4xl mb-3">📋</div>' +
+        '<div>Belum ada riwayat pemesanan</div>' +
+        '<div class="text-sm mt-1">Pesan layanan pertama Anda sekarang!</div>' +
+      '</div>';
+    return;
+  }
+
+  var html = '';
+  orders.forEach(function(o, i) {
+    var ico = o.tipe === 'Rumah' ? '🏠' : '🏢';
+    var tgl = new Date(o.tanggal).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+    html +=
+      '<div class="rounded-xl p-5 border border-dark-border mb-3 hover:border-gold/40 transition-colors" style="background:#1A1A1A">' +
+        '<div class="flex items-start justify-between gap-3 mb-3">' +
+          '<div>' +
+            '<div class="font-bold text-white">' + o.paket + '</div>' +
+            '<div class="text-gold text-xs font-semibold mt-1">#' + o.id + '</div>' +
+          '</div>' +
+          '<div class="text-right">' +
+            '<div class="font-black gold-text">Rp ' + o.harga.toLocaleString('id-ID') + '</div>' +
+            '<div class="text-xs text-gray-500 mt-1">' + new Date(o.timestamp).toLocaleDateString('id-ID') + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="text-sm text-gray-500 space-y-1">' +
+          '<div>' + ico + ' ' + o.tipe + ' · ' + o.alamat.substring(0, 50) + (o.alamat.length > 50 ? '...' : '') + '</div>' +
+          '<div>📅 ' + tgl + ' · ⏰ ' + o.jam + '</div>' +
+        '</div>' +
+      '</div>';
+  });
+  el.innerHTML = html;
+}
+
+// ── TOAST ─────────────────────────────────────────────────
+function showToast(msg, type) {
+  var toast = document.getElementById('toast');
+  var inner = document.getElementById('toast-inner');
+  var msgEl = document.getElementById('toast-msg');
+  msgEl.textContent = msg;
+
+  var colors = {
+    success: 'background:#1A3D1A;border:1px solid #2ecc71;color:#2ecc71',
+    warn:    'background:#3D2800;border:1px solid #C9A84C;color:#C9A84C',
+    info:    'background:#1A2A3D;border:1px solid #4fc3f7;color:#4fc3f7',
+  };
+  inner.style.cssText = colors[type] || colors.info;
+
+  toast.classList.remove('hidden');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(function() {
+    toast.classList.add('hidden');
+  }, 3500);
+}
+</script>
+
+</body>
+</html>
